@@ -12,8 +12,6 @@ library(magrittr)
 library(readr)
 library(dplyr)
 select <- dplyr::select
-library(quanteda)
-tokenize <- quanteda::tokenize
 
 # library(countrycode)
 # library(RSQLite) # SQLite access
@@ -45,10 +43,11 @@ utc <- emails %>%
 
 # Create Receiver by joining data from Persons df
 receiver <- emails %>% 
-  select(DocNumber, SenderPersonId, ExtractedTo) %>% 
-  left_join(persons, by = c("SenderPersonId" = "Id")) %>% 
-  mutate(receiver = Name) %>% 
-  select(-SenderPersonId, -ExtractedTo, -Name)
+  select(DocNumber, MetadataTo) %>% 
+  mutate(receiver = MetadataTo) %>% 
+  select(-MetadataTo) %>% 
+  distinct() %>% 
+  na.omit()
 
 
 # Create Sender by joining data from Persons df
@@ -56,15 +55,19 @@ sender <- emails %>%
   select(DocNumber, SenderPersonId, MetadataFrom, ExtractedFrom) %>% 
   left_join(persons, by = c("SenderPersonId" = "Id")) %>% 
   mutate(sender = Name) %>% 
-  select(-SenderPersonId, -MetadataFrom, -ExtractedFrom, -Name)
+  select(-SenderPersonId, -MetadataFrom, -ExtractedFrom, -Name) %>% 
+  distinct() %>% 
+  na.omit()
 
 
 # Create CCed by joining data from Persons df
 cced <- emails %>% 
-  select(DocNumber, SenderPersonId, ExtractedCc) %>% 
-  left_join(persons, by = c("SenderPersonId" = "Id")) %>% 
-  mutate(cced = Name) %>% 
-  select(-SenderPersonId, -ExtractedCc, Name)
+  select(DocNumber, ExtractedCc) %>% 
+  mutate(cced = ExtractedCc) %>% 
+  # left_join(aliases, by = c("cced" = "Aliases")) %>% 
+  select(-ExtractedCc) %>% 
+  distinct() %>% 
+  na.omit()
 
 
 # Clean subject field
@@ -92,8 +95,6 @@ parsed_data <- emails %>%
   left_join(cced) %>% 
   left_join(subject) %>% 
   left_join(clean_email_content) %>% 
-  select(-MetadataDateSent, -Name)
-
+  select(-MetadataDateSent)
 
 write_csv(parsed_data, './data/parsed_emails.csv')
-
