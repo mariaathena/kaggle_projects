@@ -91,7 +91,8 @@ parsed_data <- emails %>%
   left_join(receiver) %>% 
   left_join(cced) %>% 
   left_join(subject) %>% 
-  left_join(clean_email_content)
+  left_join(clean_email_content) %>% 
+  select(-MetadataDateSent, -Name)
 
 
 write_csv(parsed_data, './data/parsed_emails.csv')
