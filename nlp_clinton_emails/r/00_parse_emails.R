@@ -16,12 +16,6 @@ library(quanteda)
 tokenize <- quanteda::tokenize
 library(data.table) # writes 17x faster to csv
 
-# library(countrycode)
-# library(RSQLite) # SQLite access
-# library(qdapDictionaries) # word list and dictionaries
-# library(rworldmap) # worldmap by region with aggregation
-
-
 # Load data -----------------------------------------------------------------------
 
 emails <- read_csv("./email_data/Emails.csv")
@@ -86,33 +80,37 @@ subject <- emails %>%
 # Clean email content ------------------------------------------------------------------
 # Clean email main content field: apply tokeniser and stem words
 
-clean_email <- emails %>% 
+clean_email <- emails %>%
   select(DocNumber, ExtractedReleaseInPartOrFull, RawText) %>% 
   mutate(edited = ifelse(ExtractedReleaseInPartOrFull == "RELEASE IN FULL", 0, 1)) %>% 
-  mutate(RawText = tokenize(RawText,
-                              removePunct = TRUE, 
-                              removeSeparators = TRUE,
-                              removeHyphens = TRUE,
-                              removeNumbers = TRUE)) %>% 
-  mutate(email_raw = removeFeatures(RawText, c(stopwords("english")))) %>% 
-  mutate(email_raw = paste(email_raw, collapse = ", ")) %>% 
+  mutate(email_raw = RawText) %>% 
+  # rowwise() %>%
+  # mutate(RawText = tokenize(RawText,
+  #                             removePunct = TRUE,
+  #                             removeSeparators = TRUE,
+  #                             removeHyphens = TRUE,
+  #                             removeNumbers = TRUE)) %>%
+  # mutate(email_raw = removeFeatures(RawText, c(stopwords("english")))) %>%
+  # mutate(email_raw = paste(email_raw, collapse = ", ")) %>%
   select(-ExtractedReleaseInPartOrFull, -RawText)
   
 
 # Create quanteda corpus from email content from PDF extract
-# email_pdf.corpus <- corpus(email_content$email_pdf, 
-#                            docvars = emails[c(1,2,4)],
-#                            docnames = emails$DocNumber)
+email.corpus <- corpus(clean_email$email_raw,
+                       docvars = emails[c(1, 2)],
+                       docnames = emails$DocNumber)
 
 # Create DFM: Tokenise and remove symbols, numbers, stopwords
-# pdf_dfm <- dfm(email_pdf.corpus,
-#                ignoredFeatures = stopwords("english"), 
-#                stem = FALSE,
-#                removePunct = TRUE, 
-#                removeSeparators = TRUE,
-#                removeHyphens = TRUE,
-#                removeNumbers = TRUE)
-
+clean_content <- dfm(email.corpus,
+                   ignoredFeatures = stopwords("english"),
+                   stem = TRUE,
+                   removePunct = TRUE,
+                   removeSeparators = TRUE,
+                   removeHyphens = TRUE,
+                   removeNumbers = TRUE) %>%
+  as.matrix() %>%
+  as.data.frame() %>%
+  add_rownames(var = 'DocNumber')
 
 # Join dataframes to output -----------------------------------------------------------
 
@@ -125,12 +123,15 @@ parsed_data <- emails %>%
   # left_join(cced) %>% 
   left_join(subject) %>% 
   left_join(clean_email) %>% 
+  select(-email_raw) %>%
+  left_join(clean_content, by = 'DocNumber') %>% 
   na.omit()
 
 rm(list= ls()[!(ls() %in% c('parsed_data'))])
 
 # Output to csv
 fwrite(parsed_data, './email_data/parsed_emails.csv')
+# write_csv(parsed_data, './email_data/parsed_emails.csv')
 
 rm(list = ls())
 gc()

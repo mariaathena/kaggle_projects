@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "# Natural Language Processing - U.S. Secretary of State Hillary R. Clinton Emails\n# Maria Athena B. Engesaeth\n# 01_create_event_dictionary\n#\n# Prepare working environment------------------------------------------------------\n\n# Clean up\nrm(list = ls())\n\n# library(tidyr)\nlibrary(magrittr)\nlibrary(readr)\nlibrary(dplyr)\nselect <- dplyr::select\nlibrary(quanteda)\ntokenize <- quanteda::tokenize\nlibrary(data.table) # writes 17x faster to csv\n\n# library(countrycode)\n# library(qdapDictionaries) # word list and dictionaries\n# library(rworldmap) # worldmap by region with aggregation\n\n\n# Load data -----------------------------------------------------------------------\n\nbenghazi <- read_csv(\"./email_data/Emails.csv\")\ndoctrine <- read_csv(\"./email_data/Aliases.csv\")\narab.spring <- read_csv(\"./email_data/EmailReceivers.csv\")\npersons <- read_csv(\"./email_data/Persons.csv\")\n\n",
+    "created" : 1464345159075.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "599868295",
+    "id" : "DB20371C",
+    "lastKnownWriteTime" : 1464345394,
+    "last_content_update" : 1464345394566,
+    "path" : "~/Repositories/kaggle_projects/nlp_clinton_emails/r/01_create_event_dictionary.R",
+    "project_path" : "r/01_create_event_dictionary.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
