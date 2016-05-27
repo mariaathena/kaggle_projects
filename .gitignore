@@ -2,7 +2,6 @@
 nlp_clinton_emails/dictionary/*.dic
 
 # large publicly available datafiles
-nlp_clinton_emails//email_data/*.csv
-nlp_clinton_emails//email_data/*.sqlite
-
+nlp_clinton_emails/email_data/*.csv
+nlp_clinton_emails/email_data/*.sqlite
 
