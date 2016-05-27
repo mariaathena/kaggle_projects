@@ -1,6 +1,6 @@
 # Natural Language Processing - U.S. Secretary of State Hillary R. Clinton Emails
 # Maria Athena B. Engesaeth
-# 00_parse_data
+# 00_parse_emails
 #
 # Prepare working environment------------------------------------------------------
 
@@ -12,6 +12,9 @@ library(magrittr)
 library(readr)
 library(dplyr)
 select <- dplyr::select
+library(quanteda)
+tokenize <- quanteda::tokenize
+library(data.table) # writes 17x faster to csv
 
 # library(countrycode)
 # library(RSQLite) # SQLite access
@@ -21,10 +24,10 @@ select <- dplyr::select
 
 # Load data -----------------------------------------------------------------------
 
-emails <- read_csv("./data/Emails.csv")
-aliases <- read_csv("./data/Aliases.csv")
-receivers <- read_csv("./data/EmailReceivers.csv")
-persons <- read_csv("./data/Persons.csv")
+emails <- read_csv("./email_data/Emails.csv")
+aliases <- read_csv("./email_data/Aliases.csv")
+receivers <- read_csv("./email_data/EmailReceivers.csv")
+persons <- read_csv("./email_data/Persons.csv")
 
 
 # Load data -----------------------------------------------------------------------
@@ -38,7 +41,10 @@ persons <- read_csv("./data/Persons.csv")
 # Clean date field
 utc <- emails %>% 
   select(DocNumber, MetadataDateSent) %>%
-  mutate(date_time = as.POSIXct(MetadataDateSent))
+  mutate(date = format(as.POSIXct(MetadataDateSent,
+                                  format = "%F"),
+                       format = "%m/%d/%Y")) %>% 
+  select(-MetadataDateSent)
 
 
 # Create Receiver by joining data from Persons df
@@ -76,15 +82,39 @@ subject <- emails %>%
   mutate(subject = MetadataSubject) %>% 
   select(-MetadataSubject)
 
-  
-# Clean email main content field: apply tokeniser and stem words
-clean_email_content <- emails %>% 
-  select(DocNumber, ExtractedReleaseInPartOrFull, ExtractedBodyText, RawText) %>% 
-  mutate(edited = ifelse(ExtractedReleaseInPartOrFull == "RELEASE IN FULL", 0, 1)) %>% 
-  mutate(email_pdf = ExtractedBodyText,
-         email_raw = RawText) %>% 
-  select(-ExtractedReleaseInPartOrFull, -ExtractedBodyText, -RawText)
 
+# Clean email content ------------------------------------------------------------------
+# Clean email main content field: apply tokeniser and stem words
+
+clean_email <- emails %>% 
+  select(DocNumber, ExtractedReleaseInPartOrFull, RawText) %>% 
+  mutate(edited = ifelse(ExtractedReleaseInPartOrFull == "RELEASE IN FULL", 0, 1)) %>% 
+  mutate(RawText = tokenize(RawText,
+                              removePunct = TRUE, 
+                              removeSeparators = TRUE,
+                              removeHyphens = TRUE,
+                              removeNumbers = TRUE)) %>% 
+  mutate(email_raw = removeFeatures(RawText, c(stopwords("english")))) %>% 
+  mutate(email_raw = paste(email_raw, collapse = ", ")) %>% 
+  select(-ExtractedReleaseInPartOrFull, -RawText)
+  
+
+# Create quanteda corpus from email content from PDF extract
+# email_pdf.corpus <- corpus(email_content$email_pdf, 
+#                            docvars = emails[c(1,2,4)],
+#                            docnames = emails$DocNumber)
+
+# Create DFM: Tokenise and remove symbols, numbers, stopwords
+# pdf_dfm <- dfm(email_pdf.corpus,
+#                ignoredFeatures = stopwords("english"), 
+#                stem = FALSE,
+#                removePunct = TRUE, 
+#                removeSeparators = TRUE,
+#                removeHyphens = TRUE,
+#                removeNumbers = TRUE)
+
+
+# Join dataframes to output -----------------------------------------------------------
 
 # Cleaned dataframe to output
 parsed_data <- emails %>% 
@@ -92,9 +122,15 @@ parsed_data <- emails %>%
   left_join(utc) %>% 
   left_join(sender) %>% 
   left_join(receiver) %>% 
-  left_join(cced) %>% 
+  # left_join(cced) %>% 
   left_join(subject) %>% 
-  left_join(clean_email_content) %>% 
-  select(-MetadataDateSent)
+  left_join(clean_email) %>% 
+  na.omit()
 
-write_csv(parsed_data, './data/parsed_emails.csv')
+rm(list= ls()[!(ls() %in% c('parsed_data'))])
+
+# Output to csv
+fwrite(parsed_data, './email_data/parsed_emails.csv')
+
+rm(list = ls())
+gc()
