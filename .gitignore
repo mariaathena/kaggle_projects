@@ -1,0 +1,12 @@
+# ignore licensed dictionary
+nlp_clinton_emails/dictionary/*.dic
+
+# large publicly available datafiles
+nlp_clinton_emails//email_data/Aliases.csv
+nlp_clinton_emails//email_data/database.sqlite
+nlp_clinton_emails//email_data/EmailReceivers.csv
+nlp_clinton_emails//email_data/Emails.csv
+nlp_clinton_emails//email_data/Persons.csv
+
+nlp_clinton_emails//email_data/parsed_emails.csv
+
