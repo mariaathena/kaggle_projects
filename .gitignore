@@ -5,3 +5,4 @@ nlp_clinton_emails/dictionary/*.dic
 nlp_clinton_emails/email_data/*.csv
 nlp_clinton_emails/email_data/*.sqlite
 
+.Rproj.user

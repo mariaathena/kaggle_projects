@@ -15,6 +15,7 @@ select <- dplyr::select
 library(quanteda)
 tokenize <- quanteda::tokenize
 library(data.table) # writes 17x faster to csv
+library(feather)
 
 # Load data -----------------------------------------------------------------------
 
@@ -78,43 +79,38 @@ subject <- emails %>%
 
 
 # Clean email content ------------------------------------------------------------------
-# Clean email main content field: apply tokeniser and stem words
+# Clean email main content field: apply tokeniser and remove stopwords
 
-clean_email <- emails %>%
+email_content <- emails %>%
   select(DocNumber, ExtractedReleaseInPartOrFull, RawText) %>% 
   mutate(edited = ifelse(ExtractedReleaseInPartOrFull == "RELEASE IN FULL", 0, 1)) %>% 
-  mutate(email_raw = RawText) %>% 
-  # rowwise() %>%
-  # mutate(RawText = tokenize(RawText,
-  #                             removePunct = TRUE,
-  #                             removeSeparators = TRUE,
-  #                             removeHyphens = TRUE,
-  #                             removeNumbers = TRUE)) %>%
-  # mutate(email_raw = removeFeatures(RawText, c(stopwords("english")))) %>%
+  rowwise() %>%
+  mutate(email_raw = toLower(RawText, keepAcronyms = FALSE)) %>% 
+  mutate(email_raw = tokenize(email_raw,
+                              removePunct = TRUE,
+                              removeSeparators = TRUE,
+                              removeHyphens = TRUE,
+                              removeNumbers = TRUE)) %>%
   # mutate(email_raw = paste(email_raw, collapse = ", ")) %>%
   select(-ExtractedReleaseInPartOrFull, -RawText)
-  
 
-# Create quanteda corpus from email content from PDF extract
-email.corpus <- corpus(clean_email$email_raw,
-                       docvars = emails[c(1, 2)],
-                       docnames = emails$DocNumber)
+# remove stopwords
+email_content$email_raw <- removeFeatures(email_content$email_raw, 
+                                          c(stopwords("english"))) 
 
-# Create DFM: Tokenise and remove symbols, numbers, stopwords
-clean_content <- dfm(email.corpus,
-                   ignoredFeatures = stopwords("english"),
-                   stem = TRUE,
-                   removePunct = TRUE,
-                   removeSeparators = TRUE,
-                   removeHyphens = TRUE,
-                   removeNumbers = TRUE) %>%
-  as.matrix() %>%
-  as.data.frame() %>%
-  add_rownames(var = 'DocNumber')
+# stem words and only keep unique words
+email_content$email_raw <- wordstem(email_content$email_raw, language = "porter")
+
 
 # Join dataframes to output -----------------------------------------------------------
 
-# Cleaned dataframe to output
+# flatten word list for export to csv
+email_clean <- email_content %>% 
+  rowwise() %>% 
+  mutate(email_raw = toString(email_raw))
+  # mutate(email_raw = paste(email_raw, collapse = ", "))
+
+# Join dataframes
 parsed_data <- emails %>% 
   select(DocNumber) %>% 
   left_join(utc) %>% 
@@ -122,16 +118,40 @@ parsed_data <- emails %>%
   left_join(receiver) %>% 
   # left_join(cced) %>% 
   left_join(subject) %>% 
-  left_join(clean_email) %>% 
-  select(-email_raw) %>%
-  left_join(clean_content, by = 'DocNumber') %>% 
+  left_join(email_clean) %>% 
   na.omit()
 
-rm(list= ls()[!(ls() %in% c('parsed_data'))])
+# Simplified dataframe
+simple_data <- emails %>% 
+  select(DocNumber) %>% 
+  left_join(utc) %>% 
+  left_join(email_clean) %>% 
+  na.omit()
 
 # Output to csv
-fwrite(parsed_data, './email_data/parsed_emails.csv')
+# fwrite(parsed_data, './email_data/parsed_emails.csv')
 # write_csv(parsed_data, './email_data/parsed_emails.csv')
+write_feather(simple_data, './email_data/simplified_email.feather')
+write_feather(parsed_data, './email_data/parsed_email.feather')
+
+
+# # Create quanteda corpus from email content from PDF extract
+# email.corpus <- corpus(clean_email$email_raw,
+#                        docvars = emails[c(1,2,3,4,5,6)],
+#                        docnames = emails$DocNumber)
+# 
+# # Create DFM: Tokenise and remove symbols, numbers, stopwords
+# clean_content <- dfm(email.corpus,
+#                    ignoredFeatures = stopwords("english"),
+#                    stem = TRUE,
+#                    removePunct = TRUE,
+#                    removeSeparators = TRUE,
+#                    removeHyphens = TRUE,
+#                    removeNumbers = TRUE)
+#   as.matrix() %>%
+#   as.data.frame() %>%
+#   add_rownames(var = 'DocNumber')
+# rm(list= ls()[!(ls() %in% c('clean_email', 'clean_content'))])
 
 rm(list = ls())
 gc()
