@@ -14,6 +14,8 @@ Create dataframe to run analysis on:
 import pandas as pd
 import nltk
 import feather
+import re, math
+from collections import Counter
 
 #from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -29,6 +31,8 @@ event_dict = event_dict.transpose()
 event_dict.columns = event_dict.loc['event']
 event_dict = event_dict.reindex(event_dict.index.drop(['event']))
 
+# remove occurrences of "x...#" stemming from wikipedia using regular expression
+event_dict = event_dict.applymap(lambda z: re.sub(r'(^|\s)x(\w+,)', r'', z))
 
 ## Prepare email dataframe
 # Convert string in email_raw column to list of strings
@@ -55,6 +59,14 @@ def extract_nouns(txt):
     return nouns
 
 
+# Helper function to convert text to vector
+WORD = re.compile(r'\w+')
+
+def text_to_vector(text):
+     words = WORD.findall(text)
+     return Counter(words)
+
+
 # Helper function to compute cosine similarity
 def cosine_sim(vect1, vect2):
     a = set(vect1)
@@ -78,16 +90,26 @@ df_dict1 = event_dict
 df_dict1.applymap(extract_nouns)
 
 # Create new dataframe with only email_raw and DocNum as index
-df_email1 = email_df[['DocNumber', 'date', 'email_raw']]
-df_email1.set_index(['DocNumber'], inplace=True)
+email_df1 = email_df[['DocNumber', 'email_raw']]
+email_df1.set_index(['DocNumber'], inplace=True)
 
 # Only keep nouns in email_raw
-df_email1.email_raw = df_email1.email_raw.apply(lambda x: extract_nouns(x))
+email_df1.email_raw = email_df1.email_raw.apply(lambda x: extract_nouns(x))
 
 
 # Create new dataframe to take dates, DocNums and cosine similarity of emails
 # to events. Events are column header
+# Create new dataframe to contain cosine similarities
+# cosim_df = pd.DataFrame.from_dict(dict([for l in list_events ]))
 cosim_df = email_df[['DocNumber', 'date']]
+
+beng = text_to_vector(event_dict.benghazi[0])
+iran = text_to_vector(event_dict.iran_deal[0])
+hill = text_to_vector(event_dict.hillary[0])
+doct = text_to_vector(event_dict.doctrine[0])
+spring = text_to_vector(event_dict.arab_spring[0])
+comm = text_to_vector(event_dict.benghazi_committe[0])
+
 
 benghazi = []
 iran_deal = []
@@ -96,17 +118,16 @@ doctrine = []
 arab_spring = []
 benghazi_committe = []
 
+# email_df1 = email_df1.email_raw.apply(lambda x: text_to_vector(x))
 
-for index1, emails in df_email1.iterrows():
-    for index2, vocab in event_dict.iterrows():
-        
-        benghazi.append(cosine_sim(emails.email_raw, vocab.benghazi))
-        iran_deal.append(cosine_sim(emails.email_raw, vocab.iran_deal))
-        hillary.append(cosine_sim(emails.email_raw, vocab.hillary))
-        doctrine.append(cosine_sim(emails.email_raw, vocab.doctrine))
-        arab_spring.append(cosine_sim(emails.email_raw, vocab.arab_spring))
-        benghazi_committe.append(cosine_sim(emails.email_raw, vocab.benghazi_committe))
-
+for index, emails in email_df1.iterrows():
+    for email in emails:
+        benghazi.append(round(cosine_sim(beng, email), 3))
+        iran_deal.append(round(cosine_sim(iran, email), 3))
+        hillary.append(round(cosine_sim(hill, email), 3))
+        doctrine.append(round(cosine_sim(doct, email), 3))
+        arab_spring.append(round(cosine_sim(spring, email), 3))
+        benghazi_committe.append(round(cosine_sim(comm, email), 3))
         
 cosim_df['benghazi'] = benghazi
 cosim_df['iran_deal'] = iran_deal
@@ -114,7 +135,6 @@ cosim_df['hillary'] = hillary
 cosim_df['doctrine'] = doctrine
 cosim_df['arab_spring'] = arab_spring
 cosim_df['benghazi_committe'] = benghazi_committe
-
 
 
 # Create data type dictionary with k/v pairs 'event': []
