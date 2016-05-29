@@ -101,7 +101,7 @@ email_df1.email_raw = email_df1.email_raw.apply(lambda x: extract_nouns(x))
 # to events. Events are column header
 # Create new dataframe to contain cosine similarities
 # cosim_df = pd.DataFrame.from_dict(dict([for l in list_events ]))
-cosim_df = email_df[['DocNumber', 'date']]
+cosim_df = email_df[['DocNumber', 'date', 'edited']]
 
 beng = text_to_vector(event_dict.benghazi[0])
 iran = text_to_vector(event_dict.iran_deal[0])
@@ -137,11 +137,7 @@ cosim_df['arab_spring'] = arab_spring
 cosim_df['benghazi_committe'] = benghazi_committe
 
 
-# Create data type dictionary with k/v pairs 'event': []
-# events = event_dict.columns.values.tolist()
-# cosim = dict().fromkeys(events, list())
+output_df = pd.merge(cosim_df, email_df[['DocNumber', 'edited']],
+                       left_on='DocNumber', right_on='DocNumber', how='left')
 
-# Concatenate cosim dict onto cosim dataframe
-# cosim_df = pd.concat([cosim_df, pd.DataFrame.from_dict(cosim)])
-
-feather.write_dataframe(cosim_df, '../parsed_data/event_cosine_sim.feather')
+feather.write_dataframe(output_df, '../parsed_data/event_cosine_sim.feather')
