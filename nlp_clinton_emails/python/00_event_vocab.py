@@ -15,8 +15,8 @@ import wikipedia as wiki
 import nltk
 
 ## Hillary dictionary
-hillary = wiki.page("Hillary Clinton").content
-hillary = nltk.word_tokenize(hillary)
+cancer = wiki.page("Cancer").content
+cancer = nltk.word_tokenize(cancer)
 
 ## Benghazi dictionary
 benghazi = wiki.page("2012 Benghazi attack").content
@@ -42,7 +42,7 @@ doctrine = nltk.word_tokenize(doctrine)
 
 # Create dict type for Events
 event_dict = {
-			  'hillary': hillary,
+			  'cancer': cancer,
               'benghazi': benghazi,
               'russian_reset': russian_reset,
               'arab_spring': arab_spring,

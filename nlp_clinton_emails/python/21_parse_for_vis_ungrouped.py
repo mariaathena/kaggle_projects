@@ -39,21 +39,12 @@ topic_df = pd.concat([topic_df[['DocNumber', 'date', 'edited_x']],
                       axis=1)
 
 
-## Group by same month in year to count number of emails per topic
-## i.e. -> emails sent per topic monthly
-# make date column index
+## Format date column
 topic_df.index = pd.to_datetime(topic_df.date,
                                 format='%m/%d/%Y')
+topic_df.sort_index(axis=0, inplace=True)
 
-# perform groupby, summinng up dummies for count
-monthly = pd.DataFrame.groupby(topic_df, 
-                               by=[topic_df.index.year, 
-                                   topic_df.index.month]).aggregate(np.sum)
+topic_df['year_month'] = [(x.split('/')[0], x.split('/')[2]) for x in topic_df.date.tolist()]
 
 
-vis_df = topic_df.copy()
-vis_df['year'] = [y for y, m in vis_df.index.tolist()]
-vis_df['month'] = [m for y, m in vis_df.index.tolist()]
-vis_df['year_month'] = [(y, m) for y, m in vis_df.index.tolist()]
-
-vis_df.to_csv(open('../parsed_data/data_for_vis_ungrouped.csv', 'wb'), index=False)
+topic_df.to_csv(open('../parsed_data/data_for_vis_ungrouped.csv', 'wb'), index=False)

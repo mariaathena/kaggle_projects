@@ -105,15 +105,15 @@ cosim_df = email_df[['DocNumber', 'date', 'edited']]
 
 beng = text_to_vector(event_dict.benghazi[0])
 wiki = text_to_vector(event_dict.wiki_leak[0])
-hill = text_to_vector(event_dict.hillary[0])
+canc = text_to_vector(event_dict.cancer[0])
 doct = text_to_vector(event_dict.doctrine[0])
 spring = text_to_vector(event_dict.arab_spring[0])
 russ = text_to_vector(event_dict.russian_reset[0])
-
+# print cosine_sim(beng, hill)
 
 benghazi = []
 wiki_leak = []
-hillary = []
+cancer = []
 doctrine = []
 arab_spring = []
 russian_reset = []
@@ -124,14 +124,15 @@ for index, emails in email_df1.iterrows():
     for email in emails:
         benghazi.append(round(cosine_sim(beng, email), 3))
         wiki_leak.append(round(cosine_sim(wiki, email), 3))
-        hillary.append(round(cosine_sim(hill, email), 3))
+        cancer.append(round(cosine_sim(canc, email), 3))
         doctrine.append(round(cosine_sim(doct, email), 3))
         arab_spring.append(round(cosine_sim(spring, email), 3))
         russian_reset.append(round(cosine_sim(russ, email), 3))
         
+        
 cosim_df['benghazi'] = benghazi
 cosim_df['wiki_leak'] = wiki_leak
-cosim_df['hillary'] = hillary
+cosim_df['cancer'] = cancer
 cosim_df['doctrine'] = doctrine
 cosim_df['arab_spring'] = arab_spring
 cosim_df['russian_reset'] = russian_reset
