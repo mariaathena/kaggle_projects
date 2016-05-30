@@ -63,7 +63,7 @@ event_dict$dictionary <- wordstem(event_dict$dictionary, language = "porter")
 event_dict <- event_dict %>% 
   mutate(dictionary = paste(dictionary, collapse = ", "))
 
-write_feather(event_dict, './dictionary/parsed_dict.feather')
-# fwrite(event_dict, './dictionary/parsed_dict.csv')
+write_feather(event_dict, './parsed_data/parsed_dict.feather')
+# fwrite(event_dict, './parsed_data/parsed_dict.csv')
 
 # rm(list= ls()[!(ls() %in% c('clean_email', 'clean_content', 'event_dict'))])

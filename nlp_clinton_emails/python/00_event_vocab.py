@@ -23,8 +23,8 @@ benghazi = wiki.page("2012 Benghazi attack").content
 benghazi = nltk.word_tokenize(benghazi)
 
 ## United States House Select Committee on Benghazi
-benghazi_committe = wiki.page("United States House Select Committee on Benghazi").content
-benghazi_committe = nltk.word_tokenize(benghazi_committe)
+russian_reset = wiki.page("Russian reset").content
+russian_reset = nltk.word_tokenize(russian_reset)
 
 ## The Arab spring
 arab_spring = wiki.page("Arab spring").content
@@ -32,8 +32,8 @@ arab_spring = nltk.word_tokenize(arab_spring)
  
 ## Iran deal dictionary
 # Joint Comprehensive Plan of Action / agreement on Iran's nuclear program
-iran_deal = wiki.page("Joint Comprehensive Plan of Action").content
-iran_deal = nltk.word_tokenize(iran_deal)
+wiki_leak = wiki.page("United States diplomatic cables leak").content
+wiki_leak = nltk.word_tokenize(wiki_leak)
 
 ## The Hillary Doctrine dictionary
 # The agenda of making women's rights issues of national security.
@@ -44,9 +44,9 @@ doctrine = nltk.word_tokenize(doctrine)
 event_dict = {
 			  'hillary': hillary,
               'benghazi': benghazi,
-              'benghazi_committe': benghazi_committe,
+              'russian_reset': russian_reset,
               'arab_spring': arab_spring,
-              'iran_deal': iran_deal,
+              'wiki_leak': wiki_leak,
               'doctrine': doctrine
               }
 

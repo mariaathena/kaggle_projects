@@ -104,37 +104,37 @@ email_df1.email_raw = email_df1.email_raw.apply(lambda x: extract_nouns(x))
 cosim_df = email_df[['DocNumber', 'date', 'edited']]
 
 beng = text_to_vector(event_dict.benghazi[0])
-iran = text_to_vector(event_dict.iran_deal[0])
+wiki = text_to_vector(event_dict.wiki_leak[0])
 hill = text_to_vector(event_dict.hillary[0])
 doct = text_to_vector(event_dict.doctrine[0])
 spring = text_to_vector(event_dict.arab_spring[0])
-comm = text_to_vector(event_dict.benghazi_committe[0])
+russ = text_to_vector(event_dict.russian_reset[0])
 
 
 benghazi = []
-iran_deal = []
+wiki_leak = []
 hillary = []
 doctrine = []
 arab_spring = []
-benghazi_committe = []
+russian_reset = []
 
 # email_df1 = email_df1.email_raw.apply(lambda x: text_to_vector(x))
 
 for index, emails in email_df1.iterrows():
     for email in emails:
         benghazi.append(round(cosine_sim(beng, email), 3))
-        iran_deal.append(round(cosine_sim(iran, email), 3))
+        wiki_leak.append(round(cosine_sim(wiki, email), 3))
         hillary.append(round(cosine_sim(hill, email), 3))
         doctrine.append(round(cosine_sim(doct, email), 3))
         arab_spring.append(round(cosine_sim(spring, email), 3))
-        benghazi_committe.append(round(cosine_sim(comm, email), 3))
+        russian_reset.append(round(cosine_sim(russ, email), 3))
         
 cosim_df['benghazi'] = benghazi
-cosim_df['iran_deal'] = iran_deal
+cosim_df['wiki_leak'] = wiki_leak
 cosim_df['hillary'] = hillary
 cosim_df['doctrine'] = doctrine
 cosim_df['arab_spring'] = arab_spring
-cosim_df['benghazi_committe'] = benghazi_committe
+cosim_df['russian_reset'] = russian_reset
 
 
 output_df = pd.merge(cosim_df, email_df[['DocNumber', 'edited']],
