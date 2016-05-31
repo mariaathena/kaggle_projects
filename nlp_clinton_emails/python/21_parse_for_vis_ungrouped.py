@@ -20,12 +20,12 @@ cosim_df = feather.read_dataframe('../parsed_data/event_cosine_sim.feather')
 # threshold for each topic == topic's 75th percentile cosine sim
 cosim_df2 = cosim_df.copy()
 # cosim_df2.ix[:,3:] = cosim_df2.ix[:,3:].applymap(lambda x: round(x, 2) if x > 0.01 else 0)
-cosim_df2.benghazi = cosim_df2.benghazi.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.benghazi, 75) else 0)
-cosim_df2.wiki_leak = cosim_df2.wiki_leak.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.wiki_leak, 75) else 0)
-cosim_df2.doctrine = cosim_df2.doctrine.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.doctrine, 75) else 0)
-cosim_df2.arab_spring = cosim_df2.arab_spring.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.arab_spring, 75) else 0)
-cosim_df2.russian_reset = cosim_df2.russian_reset.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.russian_reset, 75) else 0)
-cosim_df2.cancer = cosim_df2.cancer.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.cancer, 75) else 0)
+cosim_df2.benghazi = cosim_df2.benghazi.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.benghazi, 80) else 0)
+cosim_df2.wiki_leak = cosim_df2.wiki_leak.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.wiki_leak, 80) else 0)
+cosim_df2.doctrine = cosim_df2.doctrine.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.doctrine, 80) else 0)
+cosim_df2.arab_spring = cosim_df2.arab_spring.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.arab_spring, 80) else 0)
+cosim_df2.russian_reset = cosim_df2.russian_reset.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.russian_reset, 80) else 0)
+cosim_df2.cancer = cosim_df2.cancer.apply(lambda x: round(x, 3) if x > np.percentile(cosim_df2.cancer, 80) else 0)
 
 
 ## Set emails topic == event with the highest cosine similarity to
