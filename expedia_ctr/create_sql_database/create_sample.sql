@@ -45,3 +45,26 @@ LIMIT 1150000
 --	SELECT * FROM test 
 --	TABLESAMPLE(3 PERCENT)
 --	);
+
+-- DROP TABLE IF EXISTS train_sample;
+-- SELECT *
+-- INTO train_sample
+-- FROM
+-- 	train
+-- WHERE random() < 0.03
+-- LIMIT 0.03*37000000
+
+
+-- ------IN R:
+
+--library(dplyr)
+--library(RPostgreSQL)
+
+-- db <- src_postgres("postgres")
+-- test <- read.csv(....)
+-- tmp <- copy_to(db, "data frame name here", temporary = FALSE)
+
+-- head train.csv -n1
+
+
+
